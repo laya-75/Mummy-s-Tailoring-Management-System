@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Mummy's Tailoring Manager</title>
+<style>
+:root{--bg:#fbf5ef;--card:#fffdfa;--ink:#392d35;--muted:#887782;--brand:#a34f70;--line:#efddd9;--green:#27795d;--orange:#a96928;--red:#b94b57}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font-family:system-ui,-apple-system,Segoe UI,sans-serif}
+header{background:linear-gradient(120deg,#783d59,#b66d83);color:white;padding:18px 20px;display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;border-bottom:4px dashed #e9b9c5}
+h1{font-size:21px;margin:0}header p{margin:4px 0 0;font-size:13px;opacity:.9}
+button,input,select,textarea{font:inherit}button{border:0;border-radius:11px;padding:11px 14px;background:var(--brand);color:white;font-weight:650;cursor:pointer}
+button.secondary{background:#eeeafc;color:#5944b5}button.danger{background:#fff0f0;color:#b33d48}button.small{padding:7px 10px;font-size:13px}
+main{max-width:1150px;margin:auto;padding:18px}.toolbar{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:16px}
+.toolbar button.active{background:#30216f}.grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:16px;box-shadow:0 3px 12px #7040520a}.metric{border-top:3px solid #d7a0ae}
+.metric small{color:var(--muted)}.metric strong{display:block;font-size:26px;margin-top:5px}
+h2{font-size:18px;margin:0 0 13px}.section{margin-top:16px}.muted{color:var(--muted);font-size:13px}
+.actions{display:flex;gap:8px;flex-wrap:wrap;margin:12px 0}.formgrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:11px}
+label{display:block;font-size:13px;color:var(--muted);margin-bottom:5px}input,select,textarea{width:100%;padding:11px;border:1px solid #dfe1ea;border-radius:10px;background:white;color:var(--ink)}textarea{min-height:70px;resize:vertical}
+.field.full{grid-column:1/-1}.form-actions{display:flex;gap:8px;margin-top:13px;flex-wrap:wrap}
+table{width:100%;border-collapse:collapse;font-size:14px}th,td{text-align:left;padding:11px 9px;border-bottom:1px solid var(--line);vertical-align:top}th{color:var(--muted);font-weight:600;background:#fafaff}
+.tablewrap{overflow:auto;border:1px solid var(--line);border-radius:12px}.pill{display:inline-block;border-radius:20px;padding:4px 9px;font-size:12px;background:#f0edff;color:#5c49b7}.pill.green{background:#e7f6ee;color:#14734d}.pill.orange{background:#fff3df;color:#98600e}
+.service-choice{display:flex;align-items:center;gap:8px;padding:10px;border:1px solid #dfe1ea;border-radius:10px;background:#fafaff;color:var(--ink);margin:0}.service-choice input{width:auto;accent-color:var(--brand)}.hidden{display:none!important}.right{margin-left:auto}.service-list{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px}.service-row{border:1px dashed #d8a9b5;background:#fff8f6;border-radius:13px;padding:11px}.service-head{display:flex;align-items:center;gap:8px;font-weight:700;color:#78445a;margin-bottom:8px}.service-head input{width:18px;height:18px;accent-color:#a34f70}.service-fields{display:grid;grid-template-columns:1fr 1fr;gap:8px}.service-fields input{padding:9px}.tailor-note{color:#8c6070;font-size:12px;margin:6px 0 0}.notice{padding:12px;border-radius:12px;background:#fff7e8;color:#805313;font-size:13px;margin:12px 0}
+.empty{text-align:center;padding:25px;color:var(--muted)}.search{max-width:280px}.row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+@media(max-width:760px){main{padding:12px}.grid{grid-template-columns:repeat(2,minmax(0,1fr))}.formgrid{grid-template-columns:1fr}header{padding:15px}h1{font-size:18px}.card{padding:13px}table{min-width:650px}}
+@media(max-width:380px){.grid{grid-template-columns:1fr 1fr}.metric strong{font-size:22px}}
+</style>
+</head>
+<body>
+<header><div><h1>🧵 Mummy's Tailoring Studio</h1><p>✂️ Saree Fall • Pico • Blouse • Alteration • Customer Hisaab</p></div><div class="row"><span id="roleLabel">Admin Dashboard</span><select id="roleSwitch" aria-label="Dashboard badlein" style="width:auto"><option value="admin">Admin (Mummy)</option><option value="customer">Customer View</option></select></div></header>
+<main>
+<div id="adminView">
+<div class="toolbar">
+<button class="tab active" data-tab="home">🏠 Home</button><button class="tab secondary" data-tab="orders">📋 Orders</button><button class="tab secondary" data-tab="customers">👥 Customers</button><button class="tab secondary" data-tab="payments">💰 Payments</button><button class="tab secondary" data-tab="reports">📊 Reports</button>
+</div>
+<section id="home" class="panel">
+<div class="grid" id="metrics"></div>
+<div class="actions"><button onclick="showForm('orderForm')">＋ Naya Order</button><button class="secondary" onclick="showForm('customerForm')">＋ Naya Customer</button><button class="secondary" onclick="showForm('paymentForm')">＋ Payment</button></div>
+<div class="card section"><h2>Recent Orders</h2><div id="recentOrders"></div></div>
+</section>
+<section id="orders" class="panel hidden">
+<div class="row"><h2>Saare Orders</h2><input class="search right" id="orderSearch" placeholder="Customer / work search..." oninput="renderOrders()"></div>
+<div class="actions"><button onclick="showForm('orderForm')">＋ Naya Order</button></div><div id="orderTable"></div>
+</section>
+<section id="customers" class="panel hidden">
+<div class="row"><h2>Customers</h2><input class="search right" id="customerSearch" placeholder="Naam / mobile search..." oninput="renderCustomers()"></div>
+<div class="actions"><button onclick="showForm('customerForm')">＋ Naya Customer</button></div><div id="customerTable"></div>
+</section>
+<section id="payments" class="panel hidden">
+<div class="row"><h2>Payments</h2><button class="right" onclick="showForm('paymentForm')">＋ Payment Add Karein</button></div><div id="paymentTable"></div>
+</section>
+<section id="reports" class="panel hidden">
+<h2>Hisaab-Kitaab</h2><div class="grid" id="reportMetrics"></div><div class="card section"><h2>Customer-wise Baaki Payment</h2><div id="duesTable"></div></div>
+<div class="actions"><button class="secondary" onclick="exportCSV()">⬇ Excel/CSV Export</button><button class="danger" onclick="backupJSON()">Backup Download</button><label class="row" style="margin:0"><span>Backup Restore</span><input type="file" accept=".json,application/json" onchange="restoreJSON(event)" style="max-width:210px"></label></div>
+</section>
+</div>
+<div id="customerView" class="hidden">
+<div class="card"><h2>Customer Dashboard</h2><p class="muted">Apna registered mobile number select karein. Is demo version mein customer list isi device par saved hai.</p>
+<div class="formgrid"><div class="field full"><label>Customer</label><select id="customerSelect" onchange="renderCustomerPortal()"></select></div></div></div>
+<div id="customerPortal" class="section"></div>
+<div class="notice">Note: Yeh customer view abhi demo/local hai. Public website par har customer ko sirf apna data dikhane ke liye secure login aur online database lagana zaroori hai.</div>
+</div>
+<div id="modal" class="card section hidden"></div>
+<div class="notice">📌 Data is browser/device mein save hota hai. Browser data clear karne se pehle Backup Download zaroor karein. Multiple phones par live sync abhi enabled nahi hai.</div>
+</main>
+<script>
+const KEY='mummyTailoring_v1';
+let db=JSON.parse(localStorage.getItem(KEY)||'{"customers":[],"orders":[],"payments":[]}');
+const save=()=>localStorage.setItem(KEY,JSON.stringify(db));
+const money=n=>'₹'+Number(n||0).toLocaleString('en-IN',{maximumFractionDigits:2});
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const customer=id=>db.customers.find(c=>c.id===id);
+const paid=o=>db.payments.filter(p=>p.orderId===o.id).reduce((s,p)=>s+Number(p.amount),0);
+const balance=o=>Math.max(0,Number(o.total)-paid(o));
+const totalDue=()=>db.orders.reduce((s,o)=>s+balance(o),0);
+const totalPaid=()=>db.payments.reduce((s,p)=>s+Number(p.amount),0);
+function setTab(t){document.querySelectorAll('.panel').forEach(x=>x.classList.add('hidden'));document.getElementById(t).classList.remove('hidden');document.querySelectorAll('.tab').forEach(b=>{b.classList.toggle('active',b.dataset.tab===t);b.classList.toggle('secondary',b.dataset.tab!==t)});if(t==='home')renderHome();if(t==='orders')renderOrders();if(t==='customers')renderCustomers();if(t==='payments')renderPayments();if(t==='reports')renderReports()}
+document.querySelectorAll('.tab').forEach(b=>b.onclick=()=>setTab(b.dataset.tab));
+document.getElementById('roleSwitch').onchange=e=>{let admin=e.target.value==='admin';document.getElementById('adminView').classList.toggle('hidden',!admin);document.getElementById('customerView').classList.toggle('hidden',admin);document.getElementById('roleLabel').textContent=admin?'Admin Dashboard':'Customer Dashboard';if(!admin)renderCustomerChoices()};
+function renderHome(){let revenue=totalPaid(),due=totalDue(),pending=db.orders.filter(o=>o.status!=='Delivered').length;
+document.getElementById('metrics').innerHTML=metric('Total Customers',db.customers.length)+metric('Total Orders',db.orders.length)+metric('Payment Received',money(revenue))+metric('Payment Baaki',money(due));
+document.getElementById('recentOrders').innerHTML=orderTable(db.orders.slice().reverse().slice(0,5));}
+function metric(a,b){return `<div class="card metric"><small>${a}</small><strong>${b}</strong></div>`}
+function orderTable(items){if(!items.length)return '<div class="empty">Abhi koi order nahi hai.</div>';return `<div class="tablewrap"><table><thead><tr><th>Date</th><th>Customer</th><th>Kaam</th><th>Qty</th><th>Total</th><th>Baaki</th><th>Status</th><th>Action</th></tr></thead><tbody>${items.map(o=>`<tr><td>${esc(o.date)}</td><td>${esc(customer(o.customerId)?.name||'Deleted')}</td><td>${esc(o.work)}${o.items?'<div class="muted">'+o.items.map(x=>esc(x.name)+': '+x.qty+' × '+money(x.rate)).join('<br>')+'</div>':''}</td><td>${o.items?o.items.reduce((s,x)=>s+x.qty,0):(o.qty||'—')}</td><td>${money(o.total)}</td><td>${money(balance(o))}</td><td><span class="pill ${o.status==='Delivered'?'green':'orange'}">${esc(o.status)}</span></td><td><button class="small secondary" onclick="editStatus('${o.id}')">Status</button> <button class="small danger" onclick="deleteOrder('${o.id}')">×</button></td></tr>`).join('')}</tbody></table></div>`}
+function renderOrders(){let q=(document.getElementById('orderSearch')?.value||'').toLowerCase();document.getElementById('orderTable').innerHTML=orderTable(db.orders.filter(o=>(customer(o.customerId)?.name+' '+o.work).toLowerCase().includes(q)).slice().reverse())}
+function renderCustomers(){let q=(document.getElementById('customerSearch')?.value||'').toLowerCase();let a=db.customers.filter(c=>(c.name+' '+c.phone).toLowerCase().includes(q));document.getElementById('customerTable').innerHTML=a.length?`<div class="tablewrap"><table><tr><th>Name</th><th>Mobile</th><th>Orders</th><th>Total Due</th><th>Action</th></tr>${a.map(c=>{let os=db.orders.filter(o=>o.customerId===c.id);return `<tr><td>${esc(c.name)}</td><td>${esc(c.phone)}</td><td>${os.length}</td><td>${money(os.reduce((s,o)=>s+balance(o),0))}</td><td><button class="small danger" onclick="deleteCustomer('${c.id}')">Delete</button></td></tr>`}).join('')}</table></div>`:'<div class="empty">Customer nahi mila.</div>'}
+function renderPayments(){document.getElementById('paymentTable').innerHTML=db.payments.length?`<div class="tablewrap"><table><tr><th>Date</th><th>Customer</th><th>Order</th><th>Amount</th><th>Note</th></tr>${db.payments.slice().reverse().map(p=>{let o=db.orders.find(x=>x.id===p.orderId);return `<tr><td>${esc(p.date)}</td><td>${esc(customer(o?.customerId)?.name||'')}</td><td>${esc(o?.work||'')}</td><td>${money(p.amount)}</td><td>${esc(p.note)}</td></tr>`}).join('')}</table></div>`:'<div class="empty">Abhi payment entry nahi hai.</div>'}
+function renderReports(){document.getElementById('reportMetrics').innerHTML=metric('Total Billing',money(db.orders.reduce((s,o)=>s+Number(o.total),0)))+metric('Total Received',money(totalPaid()))+metric('Total Pending',money(totalDue()))+metric('Total Expenses',money(0));document.getElementById('duesTable').innerHTML=`<div class="tablewrap"><table><tr><th>Customer</th><th>Mobile</th><th>Baaki</th></tr>${db.customers.map(c=>{let due=db.orders.filter(o=>o.customerId===c.id).reduce((s,o)=>s+balance(o),0);return `<tr><td>${esc(c.name)}</td><td>${esc(c.phone)}</td><td>${money(due)}</td></tr>`}).join('')}</table></div>`}
+function showForm(which){let m=document.getElementById('modal');m.classList.remove('hidden');let today=new Date().toISOString().slice(0,10);if(which==='customerForm')m.innerHTML=`<h2>Naya Customer</h2><form onsubmit="addCustomer(event)"><div class="formgrid"><div><label>Customer Name *</label><input name="name" required></div><div><label>Mobile Number</label><input name="phone" inputmode="tel"></div><div class="field full"><label>Address / Notes</label><textarea name="notes"></textarea></div></div><div class="form-actions"><button>Save Customer</button><button type="button" class="secondary" onclick="closeForm()">Cancel</button></div></form>`;
+if(which==='orderForm'){let opts=db.customers.map(c=>`<option value="${c.id}">${esc(c.name)} (${esc(c.phone)})</option>`).join('');let services=[['Fall','🧵','Saree Fall'],['Pico','✂️','Saree Pico'],['Blouse Stitching','👚','Blouse Stitching'],['Alteration','📏','Dress Alteration'],['Other','🪡','Other Work']];m.innerHTML=`<h2>🧵 Naya Tailoring Order</h2>${db.customers.length?'': '<p class="notice">Pehle customer add karein.</p>'}<form id="newOrderForm" onsubmit="addOrder(event)"><div class="formgrid"><div><label>Customer *</label><select name="customerId" required>${opts}</select></div><div><label>Date</label><input name="date" type="date" value="${today}" required></div><div class="field full"><label>Kaam select karein — ek order mein multiple kaam chun sakte hain</label><div class="service-list">${services.map(([name,icon,desc])=>`<div class="service-row"><div class="service-head"><input type="checkbox" class="service-check" data-service="${name}" onchange="toggleService(this)"> <span>${icon} ${name}</span></div><div class="service-fields"><div><label>Quantity</label><input type="number" class="svc-qty" min="1" value="1" disabled></div><div><label>Rate (₹)</label><input type="number" class="svc-rate" min="0" step=".01" value="0" disabled></div></div><p class="tailor-note">${desc} · Total: <strong class="svc-total">₹0</strong></p></div>`).join('')}</div></div><div><label>Advance (₹)</label><input name="advance" type="number" min="0" step=".01" value="0"></div><div><label>Expected Delivery</label><input name="delivery" type="date"></div><div><label>Status</label><select name="status"><option>Received</option><option>Work in Progress</option><option>Completed</option><option>Delivered</option></select></div><div class="field full"><label>Notes</label><textarea name="notes" placeholder="Colour, measurements ya special instructions..."></textarea></div></div><div class="card section" style="background:#fff5f5"><div class="row"><strong>Order Total</strong><strong id="orderGrandTotal" style="font-size:22px;color:#934b68">₹0</strong></div><p class="muted">Har selected kaam ka total = uski quantity × uska rate. Sabhi kaam judkar final bill banega.</p></div><div class="form-actions"><button ${db.customers.length?'':'disabled'}>Save Order</button><button type="button" class="secondary" onclick="closeForm()">Cancel</button></div></form>`}
+if(which==='paymentForm'){let opts=db.orders.map(o=>`<option value="${o.id}">${esc(customer(o.customerId)?.name||'')} — ${esc(o.work)} — Due ${money(balance(o))}</option>`).join('');m.innerHTML=`<h2>Payment Add Karein</h2>${db.orders.length?'':'<p class="notice">Pehle order add karein.</p>'}<form onsubmit="addPayment(event)"><div class="formgrid"><div class="field full"><label>Order *</label><select name="orderId" required>${opts}</select></div><div><label>Amount (₹)</label><input name="amount" type="number" min=".01" step=".01" required></div><div><label>Date</label><input name="date" type="date" value="${today}" required></div><div class="field full"><label>Note</label><input name="note" placeholder="Cash / UPI / etc."></div></div><div class="form-actions"><button ${db.orders.length?'':'disabled'}>Save Payment</button><button type="button" class="secondary" onclick="closeForm()">Cancel</button></div></form>`}}
+document.addEventListener('input',e=>{if(e.target.matches('.svc-qty,.svc-rate'))updateOrderTotal()});
+function toggleService(check){let row=check.closest('.service-row');row.querySelectorAll('.svc-qty,.svc-rate').forEach(x=>{x.disabled=!check.checked});updateOrderTotal()}
+function updateOrderTotal(){let form=document.getElementById('newOrderForm');if(!form)return;let sum=0;form.querySelectorAll('.service-row').forEach(row=>{let check=row.querySelector('.service-check'),q=Number(row.querySelector('.svc-qty').value||0),r=Number(row.querySelector('.svc-rate').value||0),line=check.checked?q*r:0;sum+=line;row.querySelector('.svc-total').textContent=money(line)});document.getElementById('orderGrandTotal').textContent=money(sum)}
+function closeForm(){document.getElementById('modal').classList.add('hidden')}
+function addCustomer(e){e.preventDefault();let f=new FormData(e.target);db.customers.push({id:crypto.randomUUID(),name:f.get('name'),phone:f.get('phone'),notes:f.get('notes')});save();closeForm();renderHome();renderCustomers()}
+function addOrder(e){e.preventDefault();let f=new FormData(e.target),id=crypto.randomUUID(),advance=Number(f.get('advance')||0),items=[];e.target.querySelectorAll('.service-row').forEach(row=>{let check=row.querySelector('.service-check');if(check.checked){let name=check.dataset.service,qty=Number(row.querySelector('.svc-qty').value),rate=Number(row.querySelector('.svc-rate').value);items.push({name,qty,rate,total:qty*rate})}});if(!items.length){alert('Kam se kam ek tailoring service select karein.');return}if(items.some(x=>!Number.isFinite(x.qty)||x.qty<1||!Number.isFinite(x.rate)||x.rate<0)){alert('Quantity aur rate sahi enter karein.');return}let total=items.reduce((s,x)=>s+x.total,0),work=items.map(x=>x.name).join(', ');db.orders.push({id,customerId:f.get('customerId'),date:f.get('date'),work,items,total,delivery:f.get('delivery'),status:f.get('status'),notes:f.get('notes')});if(advance>0)db.payments.push({id:crypto.randomUUID(),orderId:id,amount:advance,date:f.get('date'),note:'Advance'});save();closeForm();renderHome();renderOrders()}
+function addPayment(e){e.preventDefault();let f=new FormData(e.target),order=db.orders.find(o=>o.id===f.get('orderId')),amount=Number(f.get('amount'));if(amount>balance(order)){alert('Payment remaining balance se zyada hai.');return}db.payments.push({id:crypto.randomUUID(),orderId:order.id,amount,date:f.get('date'),note:f.get('note')});save();closeForm();renderPayments();renderHome()}
+function editStatus(id){let o=db.orders.find(x=>x.id===id),s=prompt('Status likhein: Received, Work in Progress, Completed, Delivered',o.status);if(['Received','Work in Progress','Completed','Delivered'].includes(s)){o.status=s;save();renderOrders();renderHome()}}
+function deleteOrder(id){if(!confirm('Order aur uski payment entries delete karein?'))return;db.orders=db.orders.filter(o=>o.id!==id);db.payments=db.payments.filter(p=>p.orderId!==id);save();renderOrders();renderHome()}
+function deleteCustomer(id){if(db.orders.some(o=>o.customerId===id)){alert('Is customer ke orders hain. Pehle orders delete karein.');return}if(confirm('Customer delete karein?')){db.customers=db.customers.filter(c=>c.id!==id);save();renderCustomers()}}
+function renderCustomerChoices(){let s=document.getElementById('customerSelect');s.innerHTML=db.customers.map(c=>`<option value="${c.id}">${esc(c.name)} — ${esc(c.phone)}</option>`).join('');renderCustomerPortal()}
+function renderCustomerPortal(){let id=document.getElementById('customerSelect').value,c=customer(id);if(!c){document.getElementById('customerPortal').innerHTML='<div class="empty">Abhi customer records nahi hain.</div>';return}let os=db.orders.filter(o=>o.customerId===id),due=os.reduce((s,o)=>s+balance(o),0);document.getElementById('customerPortal').innerHTML=`<div class="grid">${metric('Aapke Orders',os.length)}${metric('Total Bill',money(os.reduce((s,o)=>s+Number(o.total),0)))}${metric('Payment Paid',money(os.reduce((s,o)=>s+paid(o),0)))}${metric('Balance Due',money(due))}</div><div class="card section"><h2>${esc(c.name)} ke Orders</h2>${orderTable(os)}</div>`}
+function exportCSV(){let rows=[['Date','Customer','Mobile','Work','Service Details','Total','Paid','Balance','Status'],...db.orders.map(o=>[o.date,customer(o.customerId)?.name,customer(o.customerId)?.phone,o.work,o.items?o.items.map(x=>`${x.name}: ${x.qty} x ${x.rate}`).join(' | '):`${o.qty||''} x ${o.rate||''}`,o.total,paid(o),balance(o),o.status])];let csv=rows.map(r=>r.map(x=>'"'+String(x??'').replace(/"/g,'""')+'"').join(',')).join('\n');download('tailoring-records.csv','text/csv;charset=utf-8', '\ufeff'+csv)}
+function backupJSON(){download('tailoring-backup.json','application/json',JSON.stringify(db,null,2))}
+function download(name,type,data){let a=document.createElement('a'),u=URL.createObjectURL(new Blob([data],{type}));a.href=u;a.download=name;a.click();URL.revokeObjectURL(u)}
+function restoreJSON(e){let file=e.target.files[0];if(!file)return;let r=new FileReader();r.onload=()=>{try{let d=JSON.parse(r.result);if(!Array.isArray(d.customers)||!Array.isArray(d.orders)||!Array.isArray(d.payments))throw Error();db=d;save();location.reload()}catch{alert('Backup file sahi nahi hai.')}};r.readAsText(file)}
+renderHome();
+</script>
+</body></html>
